@@ -10,25 +10,33 @@ import th.ac.ku.atm.model.Customer;
 import th.ac.ku.atm.service.CustomerService;
 
 @Controller
-@RequestMapping("/customer")
-public class CustomerController {
+@RequestMapping("/login")
+public class LoginController {
 
     private CustomerService customerService;
 
-    public CustomerController(CustomerService customerService) {
+    public LoginController(CustomerService customerService) {
         this.customerService = customerService;
     }
 
     @GetMapping
-    public String getCustomerPage(Model model) {
-        model.addAttribute("allCustomers", customerService.getCustomers());
-        return "customer";
+    public String getLoginPage() {
+        return "login";
     }
 
     @PostMapping
-    public String registerCustomer(@ModelAttribute Customer customer, Model model) {
-        customerService.createCustomer(customer);
-        model.addAttribute("allCustomers", customerService.getCustomers());
-        return "redirect:customer";
+    public String login(@ModelAttribute Customer customer, Model model) {
+
+        Customer matchingCustomer = customerService.checkPin(customer);
+
+
+        if (matchingCustomer != null) {
+            model.addAttribute("greeting",
+                    "Welcome, " + matchingCustomer.getName());
+        } else {
+
+            model.addAttribute("greeting", "Can't find customer");
+        }
+        return "home";
     }
 }
