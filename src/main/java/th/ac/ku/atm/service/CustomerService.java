@@ -1,53 +1,45 @@
 package th.ac.ku.atm.service;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import th.ac.ku.atm.data.CustomerRepository;
 import th.ac.ku.atm.model.Customer;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CustomerService {
 
-    private List<Customer> customerList;
-
-    @PostConstruct
-    public void postConstruct() {
-        this.customerList = new ArrayList<>();
-    }
+    private CustomerRepository repository;
 
     public void createCustomer(Customer customer) {
-        String hashPin = hash(String.valueOf(customer.getPin()));
-        customer.setPin(Integer.parseInt(hashPin));
-        customerList.add(customer);
-    }
-
-    public List<Customer> getCustomers() {
-        return new ArrayList<>(this.customerList);
+        String hashPin = hash(customer.getPin());
+        customer.setPin(hashPin);
+        repository.save(customer);
     }
 
     public Customer findCustomer(int id) {
-        for (Customer customer : customerList) {
-            if (customer.getId() == id)
-                return customer;
+        try {
+            return repository.findById(id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
-        return null;
+    }
+
+    public List<Customer> getCustomers() {
+        return repository.findAll();
     }
 
     public Customer checkPin(Customer inputCustomer) {
 
         Customer storedCustomer = findCustomer(inputCustomer.getId());
 
-
         if (storedCustomer != null) {
-            String hashPin = String.valueOf(storedCustomer.getPin());
-
-            if (BCrypt.checkpw(String.valueOf(inputCustomer.getPin()), hashPin))
+            String storedPin = storedCustomer.getPin();
+            if (BCrypt.checkpw(inputCustomer.getPin(), storedPin))
                 return storedCustomer;
         }
-
         return null;
     }
 
@@ -55,5 +47,4 @@ public class CustomerService {
         String salt = BCrypt.gensalt(12);
         return BCrypt.hashpw(pin, salt);
     }
-
 }
