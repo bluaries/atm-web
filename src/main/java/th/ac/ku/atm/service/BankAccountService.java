@@ -21,7 +21,7 @@ public class BankAccountService {
     }
 
         public List<BankAccount> getCustomerBankAccount(int customerId) {
-            String url = "http://localhost:8081/api/bankaccount/customer/" +
+            String url = "http://localhost:8080/api/bankaccount/customer/" +
                     customerId;
             ResponseEntity<BankAccount[]> response =
                     restTemplate.getForEntity(url, BankAccount[].class);
@@ -45,5 +45,4 @@ public class BankAccountService {
             this.bankAccountList.add(bankAccount);
         }
 
-
-    }
+}
